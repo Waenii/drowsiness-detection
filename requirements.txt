@@ -1,0 +1,8 @@
+flask
+flask-bcrypt
+opencv-python
+imutils
+numpy
+scipy
+pygame
+pytz

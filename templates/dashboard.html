@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Driver Drowsiness Detection</title>
+    <style>
+      :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --accent: #4895ef;
+        --danger: #f72585;
+        --warning: #f77f00;
+        --success: #4cc9f0;
+        --dark: #212529;
+        --light: #f8f9fa;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        color: var(--dark);
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .logout-btn {
+        background-color: var(--danger);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .logout-btn:hover {
+        background-color: #d11a5b;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .video-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      #videoFeed {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+
+      .alerts-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .alert i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+      }
+
+      #drowsinessAlert {
+        background-color: rgba(247, 37, 133, 0.1);
+        border-left: 4px solid var(--danger);
+        color: var(--danger);
+      }
+
+      #yawnAlert {
+        background-color: rgba(247, 127, 0, 0.1);
+        border-left: 4px solid var(--warning);
+        color: var(--warning);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .stats {
+        margin-top: 2rem;
+        background-color: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .stats h3 {
+        color: var(--secondary);
+        margin-top: 0;
+      }
+
+      .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .stats-table th,
+      .stats-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .stats-table th {
+        background-color: var(--light);
+      }
+
+      @media (max-width: 768px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>Driver Drowsiness Detection</h1>
+          <p>Real-time monitoring for safer driving</p>
+        </div>
+        <div class="user-info">
+          <span>Welcome, {{ session['username'] }}</span>
+          <button
+            class="logout-btn"
+            onclick="location.href='{{ url_for('logout') }}'"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div class="dashboard">
+        <div class="video-container">
+          <img id="videoFeed" src="{{ url_for('video_feed') }}" />
+        </div>
+
+        <div class="alerts-container">
+          <h2><i class="fas fa-exclamation-triangle"></i> Alerts</h2>
+          <div id="drowsinessAlert" class="alert hidden">
+            <i class="fas fa-bed"></i>
+            <span>DROWSINESS DETECTED! Please take a break.</span>
+          </div>
+
+          <div id="yawnAlert" class="alert hidden">
+            <i class="fas fa-comment-dots"></i>
+            <span>YAWNING DETECTED. Stay alert!</span>
+          </div>
+
+          <div class="stats">
+            <h3><i class="fas fa-history"></i> Recent Events</h3>
+            {% if recent_events %}
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Event</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for event in recent_events %}
+                <tr>
+                  <td>{{ event.time }}</td>
+                  <td>{{ event.type }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info">No recent events to display</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function checkAlerts() {
+        fetch("/check_alerts")
+          .then((response) => response.json())
+          .then((data) => {
+            const drowsinessAlert = document.getElementById("drowsinessAlert");
+            const yawnAlert = document.getElementById("yawnAlert");
+
+            data.drowsy
+              ? drowsinessAlert.classList.remove("hidden")
+              : drowsinessAlert.classList.add("hidden");
+
+            data.yawning
+              ? yawnAlert.classList.remove("hidden")
+              : yawnAlert.classList.add("hidden");
+          });
+      }
+
+      setInterval(checkAlerts, 1000);
+      checkAlerts();
+    </script>
+  </body>
+</html>
