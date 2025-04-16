@@ -1,7 +1,6 @@
 flask
 flask-bcrypt
 opencv-python
-dlib
 imutils
 numpy
 scipy
