@@ -403,6 +403,10 @@ if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     if not os.path.exists('templates'):
         os.makedirs('templates')
+
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+
     
     # Create register.html and login.html if they don't exist
     auth_templates = {
